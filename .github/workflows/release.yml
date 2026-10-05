@@ -1,0 +1,27 @@
+name: release
+
+# Tags a version on main and publishes a GitHub release, so tag and release
+# events show up in the Prodgator tree. Run it by hand after production deploys.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag, for example v1.0.0'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag and release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: gh release create "$VERSION" --target "$GITHUB_SHA" --title "$VERSION" --generate-notes

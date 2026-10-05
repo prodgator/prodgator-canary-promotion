@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "promotion-canary-scanner",
+          "version": "1.0.0",
+          "rules": [
+            { "id": "PROMO900", "name": "SyntheticHigh", "shortDescription": { "text": "Promotion canary fixture: SyntheticHigh" }, "defaultConfiguration": { "level": "error" }, "properties": { "security-severity": "8.0" } }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "PROMO900",
+          "level": "error",
+          "message": { "text": "Synthetic finding PROMO900 from the promotion canary fixture. Not a real issue." },
+          "locations": [{ "physicalLocation": { "artifactLocation": { "uri": "src/greeting.js" }, "region": { "startLine": 1 } } }],
+          "partialFingerprints": { "primaryLocationLineHash": "promotion-canary-PROMO900" },
+          "properties": { "security-severity": "8.0" }
+        }
+      ]
+    }
+  ]
+}

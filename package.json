@@ -1,0 +1,13 @@
+{
+  "name": "prodgator-canary-promotion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sample app for walking a change from dev to uat to production in Prodgator.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "c8": "^10.1.3"
+  }
+}

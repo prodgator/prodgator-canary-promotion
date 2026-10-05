@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "promotion-canary-scanner",
+          "version": "1.0.0",
+          "rules": [
+            { "id": "PROMO001", "name": "SyntheticNoteOne", "shortDescription": { "text": "Promotion canary fixture: SyntheticNoteOne" }, "defaultConfiguration": { "level": "note" }, "properties": { "security-severity": "2.0" } },
+            { "id": "PROMO002", "name": "SyntheticNoteTwo", "shortDescription": { "text": "Promotion canary fixture: SyntheticNoteTwo" }, "defaultConfiguration": { "level": "note" }, "properties": { "security-severity": "1.5" } }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "PROMO001",
+          "level": "note",
+          "message": { "text": "Synthetic finding PROMO001 from the promotion canary fixture. Not a real issue." },
+          "locations": [{ "physicalLocation": { "artifactLocation": { "uri": "src/greeting.js" }, "region": { "startLine": 1 } } }],
+          "partialFingerprints": { "primaryLocationLineHash": "promotion-canary-PROMO001" },
+          "properties": { "security-severity": "2.0" }
+        },
+        {
+          "ruleId": "PROMO002",
+          "level": "note",
+          "message": { "text": "Synthetic finding PROMO002 from the promotion canary fixture. Not a real issue." },
+          "locations": [{ "physicalLocation": { "artifactLocation": { "uri": "src/greeting.js" }, "region": { "startLine": 2 } } }],
+          "partialFingerprints": { "primaryLocationLineHash": "promotion-canary-PROMO002" },
+          "properties": { "security-severity": "1.5" }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [dev, uat, main]
+  push:
+    branches: [dev, uat, main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Test with coverage
+        run: npx c8 --reporter=json-summary node --test --test-reporter=junit --test-reporter-destination=junit.xml
+      - name: Security scan report and attestations
+        run: node scripts/attestations.mjs
+      - name: Report to Prodgator
+        if: always()
+        uses: prodgator/prodgator-action@9d9ff8206a58cc81a06457401e0f7d1396aca295 # v1.3.2
+        with:
+          prodgator-url: https://api.prodgator.dev
+          junit: junit.xml
+          attestations: attestations.json

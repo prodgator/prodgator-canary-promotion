@@ -1,0 +1,19 @@
+name: deploy
+
+# Mocked deploys: the deployment record and its gate are the point.
+on:
+  push:
+    branches: [dev, uat, main]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: ${{ !contains(github.event.head_commit.message, '[skip deploy]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: ${{ github.ref_name == 'main' && 'production' || github.ref_name }}
+    steps:
+      - name: Deploy (mock)
+        run: echo "Deploying ${GITHUB_SHA} to ${{ github.ref_name == 'main' && 'production' || github.ref_name }}"
