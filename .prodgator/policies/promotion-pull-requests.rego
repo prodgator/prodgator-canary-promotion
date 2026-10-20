@@ -3,9 +3,10 @@
 # Checks provenance only. A pull request waits until ci.yml has reported test
 # results, coverage and a scan for its commit. The status of those reports is
 # not judged here, so a change with a high finding can still merge and the
-# release gate rejects it later. The promotion direction is informational
-# (not blocking) so hotfix and skipped-uat changes can still merge and the
-# release gate shows the concern.
+# release gate rejects it later. The promotion direction is informational:
+# an off-path pull request (a hotfix, a skipped uat) still passes with a note
+# in its reason, because a non-passing row would hold the check, and the
+# release gate is where the concern shows.
 
 # METADATA
 # title: "Promotion canary pull requests"
@@ -73,18 +74,18 @@ direction := {"status": "error", "reason": "This policy only evaluates pull requ
 } else := {"status": "pass", "reason": "Back-merge from main."} if {
 	base == "uat"
 	head == "main"
-} else := {"status": "fail", "reason": sprintf("Changes reach uat through dev. This pull request comes from %s.", [head])} if {
+} else := {"status": "pass", "reason": sprintf("Off the promotion path. Changes reach uat through dev. This pull request comes from %s.", [head])} if {
 	base == "uat"
 } else := {"status": "pass", "reason": "Promotion from uat."} if {
 	base == "main"
 	head == "uat"
-} else := {"status": "fail", "reason": "Hotfix straight to main. The release gate checks the promotion path."} if {
+} else := {"status": "pass", "reason": "Off the promotion path. Hotfix straight to main. The release gate checks the promotion path."} if {
 	base == "main"
 	startswith(head, "hotfix/")
-} else := {"status": "fail", "reason": "This skips uat. The release gate checks the promotion path."} if {
+} else := {"status": "pass", "reason": "Off the promotion path. This skips uat. The release gate checks the promotion path."} if {
 	base == "main"
 	head == "dev"
-} else := {"status": "fail", "reason": sprintf("Changes reach main through uat. This pull request comes from %s.", [head])} if {
+} else := {"status": "pass", "reason": sprintf("Off the promotion path. Changes reach main through uat. This pull request comes from %s.", [head])} if {
 	base == "main"
 } else := {"status": "pass", "reason": "Not a promotion branch."}
 

@@ -122,9 +122,9 @@ test_uat_from_main if {
 
 test_uat_from_feature if {
 	row := direction_row(pr("feature/x", "uat", all_three))
-	row.status == "fail"
+	row.status == "pass"
 	not row.blocking
-	row.reason == "Changes reach uat through dev. This pull request comes from feature/x."
+	row.reason == "Off the promotion path. Changes reach uat through dev. This pull request comes from feature/x."
 }
 
 test_main_from_uat if {
@@ -135,20 +135,20 @@ test_main_from_uat if {
 
 test_main_from_hotfix if {
 	row := direction_row(pr("hotfix/urgent", "main", all_three))
-	row.status == "fail"
-	row.reason == "Hotfix straight to main. The release gate checks the promotion path."
+	row.status == "pass"
+	row.reason == "Off the promotion path. Hotfix straight to main. The release gate checks the promotion path."
 }
 
 test_main_from_dev if {
 	row := direction_row(pr("dev", "main", all_three))
-	row.status == "fail"
-	row.reason == "This skips uat. The release gate checks the promotion path."
+	row.status == "pass"
+	row.reason == "Off the promotion path. This skips uat. The release gate checks the promotion path."
 }
 
 test_main_from_feature if {
 	row := direction_row(pr("feature/x", "main", all_three))
-	row.status == "fail"
-	row.reason == "Changes reach main through uat. This pull request comes from feature/x."
+	row.status == "pass"
+	row.reason == "Off the promotion path. Changes reach main through uat. This pull request comes from feature/x."
 }
 
 test_other_base if {
