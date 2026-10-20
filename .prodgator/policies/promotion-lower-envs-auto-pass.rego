@@ -5,7 +5,7 @@
 # title: "Promotion canary lower environments auto-pass"
 # description: "Approves every deployment to dev and uat."
 # custom:
-#   spindle:
+#   prodgator:
 #     format: 1
 #     mode: "enforce"
 #     bindings:
@@ -13,7 +13,7 @@
 #         workflow: "deploy.yml"
 #       - environment: "uat"
 #         workflow: "deploy.yml"
-package spindle.policy
+package prodgator.policy
 
 results := [{
 	"rule": "lower_envs_auto_pass",
