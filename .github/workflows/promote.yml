@@ -1,0 +1,107 @@
+name: promote
+
+# Opens or refreshes the next promotion PR after a successful deploy, so a
+# change is deployed before it moves on: dev -> uat, then uat -> main.
+# A [skip deploy] push has no successful deploy run, so it is not promoted
+# automatically. Run this workflow by hand (from: dev or uat) to promote it.
+on:
+  workflow_run:
+    workflows: [deploy]
+    types: [completed]
+    branches: [dev, uat]
+  workflow_dispatch:
+    inputs:
+      from:
+        description: Branch to promote from
+        type: choice
+        required: true
+        options: [dev, uat]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: promote-${{ inputs.from || github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check credentials
+        id: creds
+        env:
+          APP_CLIENT_ID: ${{ vars.CANARY_APP_CLIENT_ID }}
+          APP_PRIVATE_KEY: ${{ secrets.CANARY_APP_PRIVATE_KEY }}
+        run: |
+          if [ -n "$APP_CLIENT_ID" ] && [ -n "$APP_PRIVATE_KEY" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Demo automation off::Set the CANARY_APP_CLIENT_ID variable and the CANARY_APP_PRIVATE_KEY secret to turn on the demo automation. Nothing to do."
+          fi
+
+      - name: Create App token
+        if: steps.creds.outputs.enabled == 'true'
+        id: app
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.CANARY_APP_CLIENT_ID }}
+          private-key: ${{ secrets.CANARY_APP_PRIVATE_KEY }}
+
+      - name: Work out the pair
+        if: steps.creds.outputs.enabled == 'true'
+        id: pair
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          REPO: ${{ github.repository }}
+          SOURCE: ${{ inputs.from || github.event.workflow_run.head_branch }}
+        run: |
+          case "$SOURCE" in
+            dev) target=uat ;;
+            uat) target=main ;;
+            *)
+              echo "run=false" >> "$GITHUB_OUTPUT"
+              echo "::notice::Nothing to promote from ${SOURCE}. Only dev and uat have a next branch."
+              exit 0
+              ;;
+          esac
+          message=$(gh api "repos/${REPO}/commits/${SOURCE}" --jq .commit.message)
+          if [[ "$message" == *"[skip promote]"* ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::The head commit of ${SOURCE} says [skip promote]. Nothing to do."
+            exit 0
+          fi
+          source_tree=$(gh api "repos/${REPO}/commits/${SOURCE}" --jq .commit.tree.sha)
+          target_tree=$(gh api "repos/${REPO}/commits/${target}" --jq .commit.tree.sha)
+          if [ "$source_tree" = "$target_tree" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Nothing to promote: ${target} already has the same content as ${SOURCE}."
+            exit 0
+          fi
+          echo "run=true" >> "$GITHUB_OUTPUT"
+          echo "target=${target}" >> "$GITHUB_OUTPUT"
+
+      - name: Open or refresh the promotion pull request
+        if: steps.creds.outputs.enabled == 'true' && steps.pair.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          GH_REPO: ${{ github.repository }}
+          SOURCE: ${{ inputs.from || github.event.workflow_run.head_branch }}
+          TARGET: ${{ steps.pair.outputs.target }}
+        run: |
+          url=$(gh pr list --base "$TARGET" --head "$SOURCE" --state open --json url --jq '.[0].url // empty')
+          if [ -n "$url" ]; then
+            echo "::notice::A promotion pull request from ${SOURCE} to ${TARGET} is already open. It picks up the new commits: ${url}"
+          else
+            body="Promotes the content of ${SOURCE} to ${TARGET} after ${SOURCE} deployed successfully.
+
+          Opened by the promote workflow. Auto-merge is on, so it merges once the required checks pass."
+            url=$(gh pr create --base "$TARGET" --head "$SOURCE" --title "Promote ${SOURCE} to ${TARGET}" --body "$body")
+            echo "Opened ${url}"
+          fi
+          if ! gh pr merge "$url" --auto --merge; then
+            echo "::warning::Could not turn on auto-merge. Check that Allow auto-merge is on in the repository settings. The pull request stays open."
+          fi
