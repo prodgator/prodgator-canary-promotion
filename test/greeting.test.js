@@ -9,3 +9,8 @@ test('greets the world by default', () => {
 test('greets a name', () => {
   assert.equal(greeting('Ada'), 'Hello, Ada!');
 });
+
+test('trims the name and falls back to the world', () => {
+  assert.equal(greeting('  Ada '), 'Hello, Ada!');
+  assert.equal(greeting('   '), 'Hello, world!');
+});
