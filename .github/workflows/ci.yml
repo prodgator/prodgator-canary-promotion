@@ -29,7 +29,7 @@ jobs:
         run: node scripts/attestations.mjs
       - name: Report to Prodgator
         if: always()
-        uses: prodgator/prodgator-action@9d9ff8206a58cc81a06457401e0f7d1396aca295 # v1.3.2
+        uses: prodgator/prodgator-action@cbab25806f8d9c91571ab02a83f258111be47f33 # v1.4.1
         with:
           prodgator-url: https://api.prodgator.dev
           junit: junit.xml
