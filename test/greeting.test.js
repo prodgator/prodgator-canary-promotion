@@ -18,3 +18,7 @@ test('trims the name and falls back to the world', () => {
 test('collapses inner spaces in the name', () => {
   assert.equal(greeting('Ada   Lovelace'), 'Hello, Ada Lovelace!');
 });
+
+test('caps the name at 40 characters', () => {
+  assert.equal(greeting('x'.repeat(50)), `Hello, ${'x'.repeat(40)}!`);
+});
