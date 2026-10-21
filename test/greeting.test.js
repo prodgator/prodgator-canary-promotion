@@ -14,3 +14,7 @@ test('trims the name and falls back to the world', () => {
   assert.equal(greeting('  Ada '), 'Hello, Ada!');
   assert.equal(greeting('   '), 'Hello, world!');
 });
+
+test('collapses inner spaces in the name', () => {
+  assert.equal(greeting('Ada   Lovelace'), 'Hello, Ada Lovelace!');
+});
