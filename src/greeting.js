@@ -1,3 +1,4 @@
 export function greeting(name = 'world') {
-  return `Hello, ${name}!`;
+  const who = String(name).trim() || 'world';
+  return `Hello, ${who}!`;
 }
