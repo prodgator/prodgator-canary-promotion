@@ -22,3 +22,7 @@ test('collapses inner spaces in the name', () => {
 test('caps the name at 40 characters', () => {
   assert.equal(greeting('x'.repeat(50)), `Hello, ${'x'.repeat(40)}!`);
 });
+
+test('treats a null name as the world', () => {
+  assert.equal(greeting(null), 'Hello, world!');
+});
