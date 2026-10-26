@@ -26,3 +26,7 @@ test('caps the name at 40 characters', () => {
 test('treats a null name as the world', () => {
   assert.equal(greeting(null), 'Hello, world!');
 });
+
+test('drops trailing exclamation marks from the name', () => {
+  assert.equal(greeting('Ada!!'), 'Hello, Ada!');
+});
